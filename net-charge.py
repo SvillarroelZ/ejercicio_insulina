@@ -8,15 +8,28 @@
 # and the Henderson–Hasselbalch equation logic.
 # -------------------------------------------------------------
 
-# Store the human preproinsulin sequence in a variable called preproinsulin:  
-preproInsulin = "malwmrllpllallalwgpdpaaafvnqhlcgshlvealylvcgergffytpktrreaedlqvgqvelgggpgagslqplalegslqkrgiveqcctsicslyqlenycn"  
+# # Store the human preproinsulin sequence in a variable called preproinsulin:  
+# preproInsulin = "malwmrllpllallalwgpdpaaafvnqhlcgshlvealylvcgergffytpktrreaedlqvgqvelgggpgagslqplalegslqkrgiveqcctsicslyqlenycn"  
 
-# Store the remaining sequence elements of human insulin in variables:  
-lsInsulin = "malwmrllpllallalwgpdpaaa"  
-bInsulin = "fvnqhlcgshlvealylvcgergffytpkt"  
-aInsulin = "giveqcctsicslyqlenycn"  
-cInsulin = "rreaedlqvgqvelgggpgagslqplalegslqkr"  
-insulin = bInsulin + aInsulin  # Combine B-chain + A-chain to form the insulin protein:
+# # Store the remaining sequence elements of human insulin in variables:  
+# lsInsulin = "malwmrllpllallalwgpdpaaa"  
+# bInsulin = "fvnqhlcgshlvealylvcgergffytpkt"  
+# aInsulin = "giveqcctsicslyqlenycn"  
+# cInsulin = "rreaedlqvgqvelgggpgagslqplalegslqkr"  
+# insulin = bInsulin + aInsulin  # Combine B-chain + A-chain to form the insulin protein:
+
+def read_file(path: str) -> str:
+    """Read a sequence file and return the stripped string."""
+    with open(path) as f:
+        return f.read().strip()
+    
+preproInsulin = read_file("preproinsulin_seq_clean.txt")
+lsInsulin = read_file("lsinsulin_seq_clean.txt")
+bInsulin = read_file("binsulin_seq_clean.txt")
+aInsulin = read_file("ainsulin_seq_clean.txt")
+cInsulin = read_file("cinsulin_seq_clean.txt")
+
+insulin = bInsulin + aInsulin
 
 # pKa dictionary: only amino acids contributing to charge
 pKR = {
@@ -47,6 +60,11 @@ pH = 0
 # #     print('{0:.2f}'.format(pH), netCharge)
 # #     pH +=1
 
+
+# Print formatted pH and charge
+print(f"{'pH':<6} | {'net-charge':>12}")
+print("-" * 22)
+
 while (pH <= 14):
 
     # Positive charge contributors: K, H, R
@@ -64,8 +82,9 @@ while (pH <= 14):
     # Net charge = positive - negative
     netCharge = positive - negative
 
-    # Print formatted pH and charge
-    print('{0:.2f}'.format(pH), netCharge)
+    
+    #print('{0:.2f}'.format(pH), netCharge)
+    print(f"{pH:<6.2f} | {netCharge:>12.4f}")
 
     # Increase pH by 1
     pH += 1

@@ -3,37 +3,42 @@ import re
 INPUT_FILE = "preproinsulin_seq.txt"
 OUTPUT_FILE = "preproinsulin_seq_clean.txt"
 
-def clean_preproinsulin(input_file=INPUT_FILE, output_file=OUTPUT_FILE):
-    """Limpia la preproinsulina eliminando ORIGIN, números, //, espacios y saltos de línea."""
-
-    # Leer archivo original
+def clean_sequence(input_file: str, output_file: str, expected_length: int | None = None) -> str:
+    """
+    Clean a protein sequence file in NCBI ORIGIN format.
+    - Removes 'ORIGIN', '//', digits, whitespace and non-letter chars.
+    - Returns the cleaned sequence as a string (lowercase).
+    """
     with open(input_file, "r") as f:
         data = f.read()
 
-    # 1. Eliminar explícitamente las palabras ORIGIN y //
-    data = data.replace("ORIGIN", "")
-    data = data.replace("//", "")
+    # Remove ORIGIN and end marker
+    data = data.replace("ORIGIN", "").replace("//", "")
 
-    # 2. Eliminar números, espacios, tabs y saltos de línea
+    # Remove numbers and whitespace (spaces, tabs, newlines)
     data = re.sub(r"[0-9\s]", "", data)
 
-    # 3. Dejar SOLO letras, en minúscula
+    # Keep only letters, convert to lowercase
     clean_seq = re.sub(r"[^a-zA-Z]", "", data).lower()
 
-    # Guardar archivo limpio
     with open(output_file, "w") as f:
         f.write(clean_seq)
 
-    # Verificación
-    print(f"Archivo limpio creado: {output_file}")
-    print(f"Longitud final: {len(clean_seq)} caracteres")
+    print(f"Clean file created: {output_file}")
+    print(f"Final length: {len(clean_seq)} characters")
 
-    if len(clean_seq) == 110:
-        print("Longitud correcta: 110 aminoácidos.")
-    else:
-        print("ADVERTENCIA: la longitud NO es 110. Revisa el archivo original.")
+    if expected_length is not None:
+        if len(clean_seq) == expected_length:
+            print(f"Length OK: {expected_length} amino acids.")
+        else:
+            print(f"WARNING: expected {expected_length}, got {len(clean_seq)}.")
 
     return clean_seq
+
+
+def clean_preproinsulin():
+    """Wrapper for the insulin lab so names stay consistent."""
+    return clean_sequence(INPUT_FILE, OUTPUT_FILE, expected_length=110)
 
 
 if __name__ == "__main__":
