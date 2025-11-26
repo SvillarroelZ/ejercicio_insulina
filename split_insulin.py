@@ -1,5 +1,5 @@
 
-CLEAN_FILE = "preproinsulin-seq-clean.txt"
+CLEAN_FILE = "preproinsulin_seq_clean.txt"
 
 def split_insulin(clean_file=CLEAN_FILE):
     """Divide la preproinsulina limpia en los segmentos solicitados."""
@@ -26,26 +26,26 @@ def split_insulin(clean_file=CLEAN_FILE):
     # -----------------------------
     # Guardar en archivos
     # -----------------------------
-    with open("lsinsulin-seq-clean.txt", "w") as f:
+    with open("lsinsulin_seq_clean.txt", "w") as f:
         f.write(ls_seq)
 
-    with open("binsulin-seq-clean.txt", "w") as f:
+    with open("binsulin_seq_clean.txt", "w") as f:
         f.write(b_seq)
 
-    with open("cinsulin-seq-clean.txt", "w") as f:
+    with open("cinsulin_seq_clean.txt", "w") as f:
         f.write(c_seq)
 
-    with open("ainsulin-seq-clean.txt", "w") as f:
+    with open("ainsulin_seq_clean.txt", "w") as f:
         f.write(a_seq)
 
     # -----------------------------
     # Verificación
     # -----------------------------
     print("\nArchivos generados:")
-    print(f"lsinsulin-seq-clean.txt → {len(ls_seq)} caracteres (esperado: 24)")
-    print(f"binsulin-seq-clean.txt  → {len(b_seq)} caracteres (esperado: 30)")
-    print(f"cinsulin-seq-clean.txt  → {len(c_seq)} caracteres (esperado: 35)")
-    print(f"ainsulin-seq-clean.txt  → {len(a_seq)} caracteres (esperado: 21)")
+    print(f"lsinsulin_seq_clean.txt -> {len(ls_seq)} caracteres (esperado: 24)")
+    print(f"binsulin_seq_clean.txt  -> {len(b_seq)} caracteres (esperado: 30)")
+    print(f"cinsulin_seq_clean.txt  -> {len(c_seq)} caracteres (esperado: 35)")
+    print(f"ainsulin_seq_clean.txt  -> {len(a_seq)} caracteres (esperado: 21)")
 
 
 # Ejecutar automáticamente

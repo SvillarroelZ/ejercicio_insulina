@@ -1,7 +1,7 @@
 import re
 
-INPUT_FILE = "preproinsulin-seq.txt"
-OUTPUT_FILE = "preproinsulin-seq-clean.txt"
+INPUT_FILE = "preproinsulin_seq.txt"
+OUTPUT_FILE = "preproinsulin_seq_clean.txt"
 
 def clean_preproinsulin(input_file=INPUT_FILE, output_file=OUTPUT_FILE):
     """Limpia la preproinsulina eliminando ORIGIN, números, //, espacios y saltos de línea."""
