@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-split_insulin.py
-----------------
 This script reads a cleaned preproinsulin sequence (110 amino acids)
 and splits it into four biologically known segments:
 
@@ -36,10 +34,10 @@ def split_insulin(clean_file: str = CLEAN_FILE):
     # ---------------------------------------------------------
     # Segment boundaries according to the AWS re/Start lab
     # ---------------------------------------------------------
-    ls_seq = seq[0:24]     # aa 1–24  → 24 aa
-    b_seq  = seq[24:54]    # aa 25–54 → 30 aa
-    c_seq  = seq[54:89]    # aa 55–89 → 35 aa
-    a_seq  = seq[89:110]   # aa 90–110 → 21 aa
+    ls_seq = seq[0:24]     # aa 1-24  → 24 aa
+    b_seq  = seq[24:54]    # aa 25-54 → 30 aa
+    c_seq  = seq[54:89]    # aa 55-89 → 35 aa
+    a_seq  = seq[89:110]   # aa 90-110 → 21 aa
 
     # ---------------------------------------------------------
     # Write each segment to its corresponding file
