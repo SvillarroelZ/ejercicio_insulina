@@ -44,7 +44,6 @@ insulin = bInsulin + aInsulin
 # -------------------------------------------------------------
 print("\nThe sequence of human preproinsulin:")
 print("------------------------------------")
-# Usamos las partes limpiadas; esto equivale a la preproinsulina
 print(lsInsulin + bInsulin + cInsulin + aInsulin)
 
 # One-liner using concatenated strings inside the print function (as lab asks)
