@@ -2,20 +2,51 @@
 pytest configuration file for the insulin project tests.
 
 This conftest.py file is automatically loaded by pytest before running tests.
-It adjusts the Python import path to ensure that modules in the project root
-(cleaner.py, split_insulin.py, etc.) can be imported by the test files.
+It provides two main features:
 
-Additionally, this file provides a fixture that cleans up any generated files
-in the project root after each test completes. This ensures tests don't pollute
-the repository with generated artifacts.
+1. PATH CONFIGURATION:
+   Adjusts Python import path to ensure that modules in the project root
+   (cleaner.py, split_insulin.py, etc.) can be imported by test files.
+   
+   The issue: When pytest runs, sys.path may not include the project root,
+   causing "ModuleNotFoundError" when tests try to import project modules.
+   
+   The solution: We add the project root to sys.path automatically.
 
-The issue: When pytest runs, it uses sys.path which may not include the
-project root directory. This causes "ModuleNotFoundError" when tests try to
-import project modules like 'from cleaner import clean_sequence'.
+2. INTERACTIVE CLEANUP AFTER TESTS:
+   After all tests complete, prompts the user whether to delete generated
+   sequence files (*_seq_clean.txt) from the project root directory.
+   
+   This gives users control over keeping or removing pipeline output files.
 
-The solution: We add the project root to sys.path in this conftest.py file,
-which pytest loads automatically. This ensures all project modules are
-discoverable no matter how pytest is invoked.
+WORKFLOW OPTIONS:
+
+A) Run tests normally (with cleanup prompt):
+   $ pytest -v
+   → Tests run, then prompts: "Do you want to delete these files? (y/n)"
+
+B) Run tests and keep generated files (skip cleanup prompt):
+   $ pytest -v --keep-generated
+   → Tests run, files remain, no prompt
+
+C) Manual pipeline testing workflow:
+   Step 1: Clean existing files first
+   $ python -c "from pathlib import Path; [f.unlink() for f in Path('.').glob('*_seq_clean.txt')]"
+   
+   Step 2: Run pipeline scripts manually
+   $ python cleaner.py
+   $ python split_insulin.py
+   $ python string-insulin.py
+   $ python net-charge.py
+   
+   Step 3: Test with pre-generated files
+   $ pytest -v --keep-generated
+   → Tests validate the manually generated files, no cleanup prompt
+
+IMPORTANT DISTINCTIONS:
+- cleaner.py: Cleans raw ORIGIN format sequences (input processing)
+- conftest.py: Manages test environment and post-test cleanup (this file)
+- .gitignore: Prevents *_seq_clean.txt files from being committed to git
 """
 
 import sys
@@ -36,32 +67,81 @@ if str(project_root) not in sys.path:
 import pytest
 
 
-@pytest.fixture(autouse=True)
-def cleanup_generated_files():
+def pytest_addoption(parser):
     """
-    Automatically clean up generated sequence files after each test.
+    Add custom command-line options to pytest.
     
-    This fixture uses autouse=True, which means it runs after every test
-    without needing to be explicitly requested in the test function.
-    
-    Generated files that should be cleaned up:
-      - preproinsulin_seq_clean.txt
-      - lsinsulin_seq_clean.txt
-      - binsulin_seq_clean.txt
-      - cinsulin_seq_clean.txt
-      - ainsulin_seq_clean.txt
-    
-    We preserve preproinsulin_seq.txt (the original input file) since it's
-    part of the project data.
+    Options:
+        --keep-generated: Skip the interactive cleanup prompt after tests.
+                         Useful when you want to inspect generated files.
     """
-    # Yield control to the test (allow it to run)
-    yield
+    parser.addoption(
+        "--keep-generated",
+        action="store_true",
+        default=False,
+        help="Skip cleanup prompt and keep generated *_seq_clean.txt files after tests"
+    )
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """
+    Pytest hook that runs after all tests complete.
     
-    # After the test completes, clean up generated files
-    # Use glob pattern to find all *_seq_clean.txt files in project root
-    for file_path in project_root.glob("*_seq_clean.txt"):
+    This hook prompts the user to decide whether to delete generated sequence
+    files (*_seq_clean.txt) from the project root directory.
+    
+    Can be skipped with: pytest --keep-generated
+    
+    Args:
+        session: The pytest session object
+        exitstatus: The exit status code (0 = success, non-zero = failures)
+    
+    Note: This only runs in interactive mode (not in CI/CD or with --no-header)
+    """
+    # Check if user wants to skip cleanup prompt
+    keep_generated = session.config.getoption("--keep-generated")
+    
+    if keep_generated:
+        # User explicitly wants to keep files, skip prompt entirely
+        return
+    
+    # Find all generated sequence files in the project root
+    generated_files = list(project_root.glob("*_seq_clean.txt"))
+    
+    # Only prompt if there are files to delete
+    # Note: We removed sys.stdin.isatty() check to allow prompts even when
+    # run from scripts (like run_pipeline_and_test.py)
+    if generated_files:
+        print("\n" + "="*70)
+        print("GENERATED FILES DETECTED")
+        print("="*70)
+        print(f"\nThe following {len(generated_files)} file(s) were generated during the workflow:")
+        for file_path in generated_files:
+            print(f"  - {file_path.name}")
+        
+        print("\nThese files are outputs from cleaner.py and split_insulin.py.")
+        print("They are automatically ignored by .gitignore (*_seq_clean.txt pattern).")
+        print("\nTip: Use 'pytest --keep-generated' to skip this prompt.")
+        
+        # Prompt user for decision
         try:
-            file_path.unlink()  # Delete the file
-        except Exception:
-            pass  # Silently ignore any errors during cleanup
+            response = input("\nDo you want to delete these files? (y/n): ").strip().lower()
+            
+            if response in ['y', 'yes']:
+                deleted_count = 0
+                for file_path in generated_files:
+                    try:
+                        file_path.unlink()
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"  Warning: Could not delete {file_path.name}: {e}")
+                
+                print(f"\nSuccessfully deleted {deleted_count} file(s).")
+            else:
+                print("\nFiles kept. You can manually delete them later or run the pipeline again.")
+        
+        except (KeyboardInterrupt, EOFError):
+            print("\n\nCleanup skipped. Files remain in the project root.")
+        
+        print("="*70 + "\n")
 
