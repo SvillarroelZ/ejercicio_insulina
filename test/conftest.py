@@ -58,20 +58,10 @@ def cleanup_generated_files():
     yield
     
     # After the test completes, clean up generated files
-    generated_files = [
-        project_root / "preproinsulin_seq_clean.txt",
-        project_root / "lsinsulin_seq_clean.txt",
-        project_root / "binsulin_seq_clean.txt",
-        project_root / "cinsulin_seq_clean.txt",
-        project_root / "ainsulin_seq_clean.txt",
-    ]
-    
-    for file_path in generated_files:
-        # Use try/except to silently ignore files that don't exist
-        # (tests might not have generated all files)
+    # Use glob pattern to find all *_seq_clean.txt files in project root
+    for file_path in project_root.glob("*_seq_clean.txt"):
         try:
-            if file_path.exists():
-                file_path.unlink()  # Delete the file
+            file_path.unlink()  # Delete the file
         except Exception:
             pass  # Silently ignore any errors during cleanup
 

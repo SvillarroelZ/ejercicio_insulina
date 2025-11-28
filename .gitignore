@@ -8,15 +8,15 @@ __pycache__/
 # Pytest cache
 .pytest_cache/
 
+# Coverage reports
+.coverage
+htmlcov/
+
 # Temporary files created by tests
 *.tmp
 
 # Editor directories
 .vscode/
+
 # Generated sequence files (output of cleaner.py and split_insulin.py)
 *_seq_clean.txt
-preproinsulin_seq_clean.txt
-ainsulin_seq_clean.txt
-binsulin_seq_clean.txt
-cinsulin_seq_clean.txt
-lsinsulin_seq_clean.txt
