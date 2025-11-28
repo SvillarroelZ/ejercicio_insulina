@@ -96,7 +96,7 @@ def pytest_sessionfinish(session, exitstatus):
         session: The pytest session object
         exitstatus: The exit status code (0 = success, non-zero = failures)
     
-    Note: This only runs in interactive mode (not in CI/CD or with --no-header)
+    Note: Uses capmanager to temporarily disable output capture for interactive input.
     """
     # Check if user wants to skip cleanup prompt
     keep_generated = session.config.getoption("--keep-generated")
@@ -109,39 +109,48 @@ def pytest_sessionfinish(session, exitstatus):
     generated_files = list(project_root.glob("*_seq_clean.txt"))
     
     # Only prompt if there are files to delete
-    # Note: We removed sys.stdin.isatty() check to allow prompts even when
-    # run from scripts (like run_pipeline_and_test.py)
     if generated_files:
-        print("\n" + "="*70)
-        print("GENERATED FILES DETECTED")
-        print("="*70)
-        print(f"\nThe following {len(generated_files)} file(s) were generated during the workflow:")
-        for file_path in generated_files:
-            print(f"  - {file_path.name}")
+        # Temporarily disable output capture to allow interactive input
+        capmanager = session.config.pluginmanager.getplugin("capturemanager")
+        if capmanager:
+            capmanager.suspend_global_capture(in_=True)
         
-        print("\nThese files are outputs from cleaner.py and split_insulin.py.")
-        print("They are automatically ignored by .gitignore (*_seq_clean.txt pattern).")
-        print("\nTip: Use 'pytest --keep-generated' to skip this prompt.")
-        
-        # Prompt user for decision
         try:
-            response = input("\nDo you want to delete these files? (y/n): ").strip().lower()
+            print("\n" + "="*70)
+            print("GENERATED FILES DETECTED")
+            print("="*70)
+            print(f"\nThe following {len(generated_files)} file(s) were generated during the workflow:")
+            for file_path in generated_files:
+                print(f"  {file_path.name}")
             
-            if response in ['y', 'yes']:
-                deleted_count = 0
-                for file_path in generated_files:
-                    try:
-                        file_path.unlink()
-                        deleted_count += 1
-                    except Exception as e:
-                        print(f"  Warning: Could not delete {file_path.name}: {e}")
+            print("\nThese files are outputs from cleaner.py and split_insulin.py.")
+            print("They are automatically ignored by .gitignore (*_seq_clean.txt pattern).")
+            print("\nTip: Use 'pytest --keep-generated' to skip this prompt.")
+            
+            # Prompt user for decision
+            try:
+                response = input("\nDo you want to delete these files? (y/n): ").strip().lower()
                 
-                print(f"\nSuccessfully deleted {deleted_count} file(s).")
-            else:
-                print("\nFiles kept. You can manually delete them later or run the pipeline again.")
+                if response in ['y', 'yes']:
+                    deleted_count = 0
+                    for file_path in generated_files:
+                        try:
+                            file_path.unlink()
+                            deleted_count += 1
+                        except Exception as e:
+                            print(f"  Warning: Could not delete {file_path.name}: {e}")
+                    
+                    print(f"\nSuccessfully deleted {deleted_count} file(s).")
+                else:
+                    print("\nFiles kept. You can manually delete them later or run the pipeline again.")
+            
+            except (KeyboardInterrupt, EOFError):
+                print("\n\nCleanup skipped. Files remain in the project root.")
+            
+            print("="*70 + "\n")
         
-        except (KeyboardInterrupt, EOFError):
-            print("\n\nCleanup skipped. Files remain in the project root.")
-        
-        print("="*70 + "\n")
+        finally:
+            # Re-enable output capture
+            if capmanager:
+                capmanager.resume_global_capture()
 
