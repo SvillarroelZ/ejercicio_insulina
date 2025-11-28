@@ -11,6 +11,13 @@ This document describes the complete workflow for testing the insulin processing
 3. string-insulin.py: Calculates molecular weight of insulin (B + A chains)
 4. net-charge.py: Calculates net charge table across pH 0-14
 
+## File Naming Clarification
+
+To avoid confusion between similar sounding scripts:
+
+  cleaner.py: Cleans ORIGIN format sequences (input processing)
+  reset_workspace.py: Resets workspace by removing all generated files and artifacts
+
 ## Complete Testing Workflow
 
 ### Step 1: Clean Workspace (Before Starting)
@@ -18,7 +25,7 @@ This document describes the complete workflow for testing the insulin processing
 Remove any previously generated files to ensure a clean state:
 
 ```bash
-python clean_workspace.py
+python reset_workspace.py
 ```
 
 This removes:
@@ -127,6 +134,7 @@ Then open htmlcov/index.html in browser
 
 Tracked files:
   Source code: cleaner.py, split_insulin.py, string-insulin.py, net-charge.py
+  Utilities: reset_workspace.py (workspace cleanup utility)
   Original data: preproinsulin_seq.txt (NEVER deleted)
   Test files: test/*.py
   Configuration: .gitignore, test/conftest.py
@@ -141,7 +149,7 @@ Ignored files (in .gitignore):
 
 ```bash
 # Full workflow
-python clean_workspace.py
+python reset_workspace.py
 pytest -v
 python cleaner.py
 python split_insulin.py
@@ -158,7 +166,8 @@ python cleaner.py && python split_insulin.py && python string-insulin.py && pyth
 1. Original data is protected: preproinsulin_seq.txt is NEVER deleted by any script
 2. Tests are isolated: Tests use temporary directories (tmp_path) and do not interfere with manual pipeline execution
 3. Interactive cleanup: The prompt at the end gives you control over generated files
-4. Coverage: Currently at 99% overall, 100% on all main modules
+4. File naming: cleaner.py cleans sequences, reset_workspace.py resets the workspace
+5. Coverage: Currently at 99% overall, 100% on all main modules
 
 ## Troubleshooting
 

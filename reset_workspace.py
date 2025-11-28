@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """
-Clean workspace utility for insulin project.
+Reset workspace utility for insulin project.
 
-This script removes generated files from both the project root and test directories:
-- Generated sequence files (*_seq_clean.txt) from pipeline execution
-- Test temporary directories and files
+This script removes all generated files and artifacts from the workspace:
+  Generated sequence files (*_seq_clean.txt) from pipeline execution
+  Test cache directories (.pytest_cache, __pycache__)
+  Coverage reports (.coverage, htmlcov/)
 
 Use this to reset the workspace to a clean state before running the pipeline.
 
+Note: This is different from cleaner.py which cleans ORIGIN format sequences.
+      This script resets the entire workspace by removing generated artifacts.
+
 Usage:
-    python clean_workspace.py           # Interactive: shows files and asks confirmation
-    python clean_workspace.py --force   # Non-interactive: deletes without asking
-    python clean_workspace.py --list    # Just list files without deleting
+    python reset_workspace.py           # Interactive: shows files and asks confirmation
+    python reset_workspace.py --force   # Non-interactive: deletes without asking
+    python reset_workspace.py --list    # Just list files without deleting
 """
 
 import sys
@@ -110,11 +114,11 @@ def clean_files(files_dict):
 
 
 def main():
-    """Main cleanup function."""
+    """Main reset workspace function."""
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="Clean generated files from insulin project workspace"
+        description="Reset workspace by removing generated files and artifacts"
     )
     parser.add_argument(
         "--force", "-f",
