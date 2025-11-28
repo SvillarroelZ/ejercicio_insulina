@@ -382,3 +382,22 @@ def test_clean_sequence_only_numbers_and_symbols(tmp_path):
 	
 	# The output file should be empty
 	assert out.read_text() == "", "Output file should be empty for input with no letters"
+
+def test_clean_sequence_expected_length_warning(tmp_path, capsys):
+    # Step 1: Create a file with a short sequence
+    content = "ORIGIN\nATGC\n//"
+    inp = tmp_path / "short_seq.txt"
+    out = tmp_path / "short_seq_clean.txt"
+    inp.write_text(content)
+
+    # Step 2: Call clean_sequence with an expected_length that does NOT match
+    from cleaner import clean_sequence
+    result = clean_sequence(str(inp), str(out), expected_length=10)
+
+    # Step 3: Verify that the cleaned sequence is still returned correctly
+    assert result == "atgc"
+    assert out.read_text() == "atgc"
+
+    # Step 4: Verify that the WARNING message was printed
+    captured = capsys.readouterr()
+    assert "WARNING: expected 10" in captured.out
