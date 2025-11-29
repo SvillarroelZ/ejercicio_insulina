@@ -23,8 +23,6 @@ Key pytest fixtures used:
 import importlib.util
 from pathlib import Path
 
-import pytest
-
 
 def test_import_net_charge(tmp_path, monkeypatch):
     """

@@ -22,8 +22,6 @@ Key pytest fixtures used:
 import importlib.util
 from pathlib import Path
 
-import pytest
-
 import split_insulin
 
 

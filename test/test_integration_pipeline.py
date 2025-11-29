@@ -28,8 +28,6 @@ inside tmp_path, not in the repository root.
 import importlib.util
 from pathlib import Path
 
-import pytest
-
 from cleaner import clean_sequence
 import split_insulin
 
