@@ -8,8 +8,8 @@ preproinsulin sequence and splits it into four biologically meaningful segments:
   3. C-peptide: amino acids 55-89
   4. A-chain: amino acids 90-110
 
-The split_insulin() function reads from a file called "preproinsulin_seq_clean.txt"
-and writes four output files. For testing, we create these files in a temporary
+The split_insulin() function reads from "data/preproinsulin_seq_clean.txt"
+and writes four output files to the data/ directory. For testing, we create these files in a temporary
 directory (tmp_path) and change the working directory (monkeypatch.chdir) so the
 function operates there instead of in the repository root.
 
@@ -97,9 +97,13 @@ def test_split_insulin_splits_110_amino_acids_correctly(tmp_path, monkeypatch):
 	)
 	assert len(seq_110) == 110, "Test sequence must be exactly 110 aa"
 	
+	# Step 1.5: Create data directory in tmp_path
+	data_dir = tmp_path / "data"
+	data_dir.mkdir(exist_ok=True)
+	
 	# Step 2: Create the input file that split_insulin expects
-	# split_insulin.py reads from "preproinsulin_seq_clean.txt" by default.
-	input_file = tmp_path / "preproinsulin_seq_clean.txt"
+	# split_insulin.py reads from "data/preproinsulin_seq_clean.txt" by default.
+	input_file = tmp_path / "data" / "preproinsulin_seq_clean.txt"
 	input_file.write_text(seq_110)
 	
 	# Step 3: Change the working directory to tmp_path
@@ -121,29 +125,29 @@ def test_split_insulin_splits_110_amino_acids_correctly(tmp_path, monkeypatch):
 	# A:  seq[89:110] (21 characters)
 	
 	# Read and verify LS (Leader Sequence)
-	ls_file = tmp_path / "lsinsulin_seq_clean.txt"
-	assert ls_file.exists(), "lsinsulin_seq_clean.txt should be created"
+	ls_file = tmp_path / "data" / "lsinsulin_seq_clean.txt"
+	assert ls_file.exists(), "data/lsinsulin_seq_clean.txt should be created"
 	ls_content = ls_file.read_text()
 	assert len(ls_content) == 24, f"LS should be 24 aa, got {len(ls_content)}"
 	assert ls_content == seq_110[0:24], "LS content does not match expected segment"
 	
 	# Read and verify B-chain
-	b_file = tmp_path / "binsulin_seq_clean.txt"
-	assert b_file.exists(), "binsulin_seq_clean.txt should be created"
+	b_file = tmp_path / "data" / "binsulin_seq_clean.txt"
+	assert b_file.exists(), "data/binsulin_seq_clean.txt should be created"
 	b_content = b_file.read_text()
 	assert len(b_content) == 30, f"B-chain should be 30 aa, got {len(b_content)}"
 	assert b_content == seq_110[24:54], "B-chain content does not match expected segment"
 	
 	# Read and verify C-peptide
-	c_file = tmp_path / "cinsulin_seq_clean.txt"
-	assert c_file.exists(), "cinsulin_seq_clean.txt should be created"
+	c_file = tmp_path / "data" / "cinsulin_seq_clean.txt"
+	assert c_file.exists(), "data/cinsulin_seq_clean.txt should be created"
 	c_content = c_file.read_text()
 	assert len(c_content) == 35, f"C-peptide should be 35 aa, got {len(c_content)}"
 	assert c_content == seq_110[54:89], "C-peptide content does not match expected segment"
 	
 	# Read and verify A-chain
-	a_file = tmp_path / "ainsulin_seq_clean.txt"
-	assert a_file.exists(), "ainsulin_seq_clean.txt should be created"
+	a_file = tmp_path / "data" / "ainsulin_seq_clean.txt"
+	assert a_file.exists(), "data/ainsulin_seq_clean.txt should be created"
 	a_content = a_file.read_text()
 	assert len(a_content) == 21, f"A-chain should be 21 aa, got {len(a_content)}"
 	assert a_content == seq_110[89:110], "A-chain content does not match expected segment"
@@ -177,8 +181,12 @@ def test_split_insulin_error_for_non_110_sequence(tmp_path, monkeypatch, capsys)
 	# Too short: 100 aa
 	seq_wrong = "a" * 100
 	
+	# Step 1.5: Create data directory in tmp_path
+	data_dir = tmp_path / "data"
+	data_dir.mkdir(exist_ok=True)
+	
 	# Step 2: Create input file with wrong length
-	input_file = tmp_path / "preproinsulin_seq_clean.txt"
+	input_file = tmp_path / "data" / "preproinsulin_seq_clean.txt"
 	input_file.write_text(seq_wrong)
 	
 	# Step 3: Change to temp directory
@@ -190,10 +198,10 @@ def test_split_insulin_error_for_non_110_sequence(tmp_path, monkeypatch, capsys)
 	
 	# Step 5: Verify that NO output files were created
 	# This is the expected defensive behavior.
-	assert not (tmp_path / "lsinsulin_seq_clean.txt").exists(), "LS file should not be created for wrong length"
-	assert not (tmp_path / "binsulin_seq_clean.txt").exists(), "B file should not be created for wrong length"
-	assert not (tmp_path / "cinsulin_seq_clean.txt").exists(), "C file should not be created for wrong length"
-	assert not (tmp_path / "ainsulin_seq_clean.txt").exists(), "A file should not be created for wrong length"
+	assert not (tmp_path / "data" / "lsinsulin_seq_clean.txt").exists(), "LS file should not be created for wrong length"
+	assert not (tmp_path / "data" / "binsulin_seq_clean.txt").exists(), "B file should not be created for wrong length"
+	assert not (tmp_path / "data" / "cinsulin_seq_clean.txt").exists(), "C file should not be created for wrong length"
+	assert not (tmp_path / "data" / "ainsulin_seq_clean.txt").exists(), "A file should not be created for wrong length"
 	
 	# Step 6: Verify error message was printed
 	# capsys.readouterr() captures and returns the captured stdout and stderr.

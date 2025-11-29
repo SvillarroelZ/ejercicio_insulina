@@ -110,6 +110,10 @@ def test_full_pipeline_with_real_preproinsulin_data(tmp_path, monkeypatch, capsy
 	input_file = tmp_path / "preproinsulin_seq.txt"
 	input_file.write_text(origin_text)
 	
+	# Step 4.5: Create data directory in tmp_path for output files
+	data_dir = tmp_path / "data"
+	data_dir.mkdir(exist_ok=True)
+	
 	# Step 5: Change working directory to tmp_path
 	# This is CRITICAL: all subsequent file operations (open(), read(), write())
 	# that use relative paths will now happen in tmp_path, not the repo root.
@@ -117,24 +121,24 @@ def test_full_pipeline_with_real_preproinsulin_data(tmp_path, monkeypatch, capsy
 	monkeypatch.chdir(tmp_path)
 	
 	# Step 6: Run cleaner to produce the cleaned file
-	cleaned_name = "preproinsulin_seq_clean.txt"
+	cleaned_name = "data/preproinsulin_seq_clean.txt"
 	clean_sequence(str(input_file), cleaned_name)
 	
 	# Verify the cleaned file exists and contains the expected sequence
 	cleaned_file = tmp_path / cleaned_name
-	assert cleaned_file.exists(), "Cleaned file should exist in tmp_path"
+	assert cleaned_file.exists(), "Cleaned file should exist in tmp_path/data"
 	cleaned_content = cleaned_file.read_text().strip()
 	assert len(cleaned_content) == 110, f"Cleaned sequence should be 110 aa, got {len(cleaned_content)}"
 	assert cleaned_content == real_seq_110, "Cleaned sequence should match real preproinsulin"
 	
-	# Step 7: Run the splitter which expects the cleaned file in the cwd
-	split_insulin.split_insulin()  # uses default CLEAN_FILE = "preproinsulin_seq_clean.txt"
+	# Step 7: Run the splitter which expects the cleaned file in the cwd/data
+	split_insulin.split_insulin()  # uses default CLEAN_FILE = "data/preproinsulin_seq_clean.txt"
 	
-	# Verify the four segment files were created in tmp_path with correct lengths
-	ls = (tmp_path / "lsinsulin_seq_clean.txt").read_text().strip()
-	b = (tmp_path / "binsulin_seq_clean.txt").read_text().strip()
-	c = (tmp_path / "cinsulin_seq_clean.txt").read_text().strip()
-	a = (tmp_path / "ainsulin_seq_clean.txt").read_text().strip()
+	# Verify the four segment files were created in tmp_path/data with correct lengths
+	ls = (tmp_path / "data" / "lsinsulin_seq_clean.txt").read_text().strip()
+	b = (tmp_path / "data" / "binsulin_seq_clean.txt").read_text().strip()
+	c = (tmp_path / "data" / "cinsulin_seq_clean.txt").read_text().strip()
+	a = (tmp_path / "data" / "ainsulin_seq_clean.txt").read_text().strip()
 	
 	# Verify segment lengths
 	assert len(ls) == 24, f"LS should be 24 aa, got {len(ls)}"
@@ -182,4 +186,4 @@ def test_full_pipeline_with_real_preproinsulin_data(tmp_path, monkeypatch, capsy
 	
 	# Step 10: After test, monkeypatch.chdir and tmp_path are automatically cleaned
 	# by pytest. No files remain in the repository root. All generated files
-	# (preproinsulin_seq_clean.txt, *insulin*.txt, etc.) are deleted automatically.
+	# (data/preproinsulin_seq_clean.txt, data/*insulin*.txt, etc.) are deleted automatically.

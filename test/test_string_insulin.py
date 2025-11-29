@@ -7,13 +7,14 @@ This module tests the string-insulin.py script which:
   3. Calculates the molecular weight of the processed insulin (B + A chains).
   4. Compares against the actual accepted molecular weight and calculates error.
 
-The string-insulin.py script reads four files at import time:
-  - preproinsulin_seq_clean.txt
-  - lsinsulin_seq_clean.txt
-  - binsulin_seq_clean.txt
-  - ainsulin_seq_clean.txt
+The string-insulin.py script reads files at import time from data/ directory:
+  - data/preproinsulin_seq_clean.txt
+  - data/lsinsulin_seq_clean.txt
+  - data/binsulin_seq_clean.txt
+  - data/ainsulin_seq_clean.txt
+  - data/cinsulin_seq_clean.txt
 
-To test without modifying repository files, we create these files in tmp_path
+To test without modifying repository files, we create these files in tmp_path/data
 and change the working directory using monkeypatch.chdir().
 
 Key pytest fixtures used:
@@ -44,25 +45,29 @@ def test_import_string_insulin(tmp_path, monkeypatch):
       - No errors are raised.
       - All file reads are satisfied by our temporary files.
     """
+    # Step 0: Create data directory in tmp_path
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(exist_ok=True)
+    
     # Step 1: Create the files that string-insulin.py expects to read
     # These are minimal dummy sequences for testing (not realistic biology).
     # In real use, these come from cleaner.py and split_insulin.py.
     # Explanation of each file:
-    #   - preproinsulin_seq_clean.txt: Full 110 aa preproinsulin (LS + B + C + A)
-    #   - lsinsulin_seq_clean.txt: Leader sequence (24 aa)
-    #   - binsulin_seq_clean.txt: B-chain (30 aa)
-    #   - ainsulin_seq_clean.txt: A-chain (21 aa)
-    #   - cinsulin_seq_clean.txt: C-peptide (35 aa)
-    (tmp_path / "preproinsulin_seq_clean.txt").write_text("ATGC")
-    (tmp_path / "lsinsulin_seq_clean.txt").write_text("LS")
-    (tmp_path / "binsulin_seq_clean.txt").write_text("BCHAIN")
-    (tmp_path / "ainsulin_seq_clean.txt").write_text("ACHAIN")
-    (tmp_path / "cinsulin_seq_clean.txt").write_text("CCHAIN")
+    #   - data/preproinsulin_seq_clean.txt: Full 110 aa preproinsulin (LS + B + C + A)
+    #   - data/lsinsulin_seq_clean.txt: Leader sequence (24 aa)
+    #   - data/binsulin_seq_clean.txt: B-chain (30 aa)
+    #   - data/ainsulin_seq_clean.txt: A-chain (21 aa)
+    #   - data/cinsulin_seq_clean.txt: C-peptide (35 aa)
+    (tmp_path / "data" / "preproinsulin_seq_clean.txt").write_text("ATGC")
+    (tmp_path / "data" / "lsinsulin_seq_clean.txt").write_text("LS")
+    (tmp_path / "data" / "binsulin_seq_clean.txt").write_text("BCHAIN")
+    (tmp_path / "data" / "ainsulin_seq_clean.txt").write_text("ACHAIN")
+    (tmp_path / "data" / "cinsulin_seq_clean.txt").write_text("CCHAIN")
 
     # Step 2: Change the working directory to tmp_path
     # monkeypatch.chdir() temporarily changes the current working directory.
-    # When string-insulin.py calls read_file("preproinsulin_seq_clean.txt"),
-    # it will look in the tmp_path directory (current working dir), not the repo root.
+    # When string-insulin.py calls read_file("data/preproinsulin_seq_clean.txt"),
+    # it will look in the tmp_path/data directory (current working dir), not the repo root.
     # This prevents any interaction with real repository files.
     # After the test, monkeypatch automatically restores the original directory.
     monkeypatch.chdir(tmp_path)
@@ -114,6 +119,10 @@ def test_string_insulin_molecular_weight_calculation(tmp_path, monkeypatch, caps
       - Error percentage is within biological tolerance.
       - Output is printed correctly.
     """
+    # Step 0: Create data directory in tmp_path
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(exist_ok=True)
+    
     # Step 1: Create realistic test sequences
     # These are the actual segments from human preproinsulin (110 total amino acids).
     # LS = leader/signal sequence (24 aa): "malwmrllpllallalwgpdpaaa"
@@ -127,15 +136,15 @@ def test_string_insulin_molecular_weight_calculation(tmp_path, monkeypatch, caps
     a_seq = "giveqcctsicslyqlenycn"              # 21 aa
     prepro = ls_seq + b_seq + c_seq + a_seq     # 110 aa (preproinsulin)
     
-    # Step 2: Create test sequence files in tmp_path
+    # Step 2: Create test sequence files in tmp_path/data
     # string-insulin.py expects these files to exist and reads them at import time.
-    # By creating them in tmp_path and changing the working directory, we avoid
+    # By creating them in tmp_path/data and changing the working directory, we avoid
     # touching the repository's real files.
-    (tmp_path / "preproinsulin_seq_clean.txt").write_text(prepro)
-    (tmp_path / "lsinsulin_seq_clean.txt").write_text(ls_seq)
-    (tmp_path / "binsulin_seq_clean.txt").write_text(b_seq)
-    (tmp_path / "ainsulin_seq_clean.txt").write_text(a_seq)
-    (tmp_path / "cinsulin_seq_clean.txt").write_text(c_seq)
+    (tmp_path / "data" / "preproinsulin_seq_clean.txt").write_text(prepro)
+    (tmp_path / "data" / "lsinsulin_seq_clean.txt").write_text(ls_seq)
+    (tmp_path / "data" / "binsulin_seq_clean.txt").write_text(b_seq)
+    (tmp_path / "data" / "ainsulin_seq_clean.txt").write_text(a_seq)
+    (tmp_path / "data" / "cinsulin_seq_clean.txt").write_text(c_seq)
 
     # Step 3: Change working directory to tmp_path
     # This ensures all file operations (especially open() calls) happen in the temp directory.

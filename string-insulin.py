@@ -30,11 +30,11 @@ def read_file(path: str) -> str:
         return f.read().strip()
 
 # Load sequences from cleaned text files   
-preproInsulin = read_file("preproinsulin_seq_clean.txt")
-lsInsulin = read_file("lsinsulin_seq_clean.txt")
-bInsulin = read_file("binsulin_seq_clean.txt")
-aInsulin = read_file("ainsulin_seq_clean.txt")
-cInsulin = read_file("cinsulin_seq_clean.txt")
+preproInsulin = read_file("data/preproinsulin_seq_clean.txt")
+lsInsulin = read_file("data/lsinsulin_seq_clean.txt")
+bInsulin = read_file("data/binsulin_seq_clean.txt")
+aInsulin = read_file("data/ainsulin_seq_clean.txt")
+cInsulin = read_file("data/cinsulin_seq_clean.txt")
 
 # Combine B-chain and A-chain to form the processed insulin molecule
 insulin = bInsulin + aInsulin

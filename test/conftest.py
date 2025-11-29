@@ -44,12 +44,12 @@ def cleanup_generated_files():
     This fixture uses autouse=True, which means it runs after every test
     without needing to be explicitly requested in the test function.
     
-    Generated files that should be cleaned up:
-      - preproinsulin_seq_clean.txt
-      - lsinsulin_seq_clean.txt
-      - binsulin_seq_clean.txt
-      - cinsulin_seq_clean.txt
-      - ainsulin_seq_clean.txt
+    Generated files that should be cleaned up (in data/ directory):
+      - data/preproinsulin_seq_clean.txt
+      - data/lsinsulin_seq_clean.txt
+      - data/binsulin_seq_clean.txt
+      - data/cinsulin_seq_clean.txt
+      - data/ainsulin_seq_clean.txt
     
     We preserve preproinsulin_seq.txt (the original input file) since it's
     part of the project data.
@@ -59,11 +59,11 @@ def cleanup_generated_files():
     
     # After the test completes, clean up generated files
     generated_files = [
-        project_root / "preproinsulin_seq_clean.txt",
-        project_root / "lsinsulin_seq_clean.txt",
-        project_root / "binsulin_seq_clean.txt",
-        project_root / "cinsulin_seq_clean.txt",
-        project_root / "ainsulin_seq_clean.txt",
+        project_root / "data" / "preproinsulin_seq_clean.txt",
+        project_root / "data" / "lsinsulin_seq_clean.txt",
+        project_root / "data" / "binsulin_seq_clean.txt",
+        project_root / "data" / "cinsulin_seq_clean.txt",
+        project_root / "data" / "ainsulin_seq_clean.txt",
     ]
     
     for file_path in generated_files:

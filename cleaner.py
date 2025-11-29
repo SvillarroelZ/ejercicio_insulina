@@ -1,7 +1,8 @@
 import re
+import os
 
 INPUT_FILE = "preproinsulin_seq.txt"
-OUTPUT_FILE = "preproinsulin_seq_clean.txt"
+OUTPUT_FILE = "data/preproinsulin_seq_clean.txt"
 
 def clean_sequence(input_file: str, output_file: str, expected_length: int | None = None) -> str:
     """
@@ -21,6 +22,9 @@ def clean_sequence(input_file: str, output_file: str, expected_length: int | Non
     # Keep only letters, convert to lowercase
     clean_seq = re.sub(r"[^a-zA-Z]", "", data).lower()
 
+    # Create data directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    
     with open(output_file, "w") as f:
         f.write(clean_seq)
 

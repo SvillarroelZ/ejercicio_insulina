@@ -7,11 +7,11 @@ of the insulin protein across pH values from 0 to 14 using amino acid pKa values
 The script uses the Henderson–Hasselbalch equation to determine the ionization
 state of charge-bearing amino acids (K, R, H, D, E, Y, C) at each pH.
 
-The net-charge.py script reads files at import time:
-  - binsulin_seq_clean.txt (B-chain)
-  - ainsulin_seq_clean.txt (A-chain)
+The net-charge.py script reads files at import time from data/ directory:
+  - data/binsulin_seq_clean.txt (B-chain)
+  - data/ainsulin_seq_clean.txt (A-chain)
 
-To test without modifying repository files, we create these files in tmp_path
+To test without modifying repository files, we create these files in tmp_path/data
 and change the working directory using monkeypatch.chdir().
 
 Key pytest fixtures used:
@@ -32,7 +32,7 @@ def test_import_net_charge(tmp_path, monkeypatch):
     so we must create the required files before importing.
     
     This test:
-      1. Creates sequence files in tmp_path.
+      1. Creates sequence files in tmp_path/data.
       2. Changes working directory to tmp_path.
       3. Imports and executes net-charge.py.
       4. Verifies the module code ran without errors.
@@ -42,21 +42,25 @@ def test_import_net_charge(tmp_path, monkeypatch):
       - No errors are raised.
       - All file reads are satisfied by our temporary files.
     """
-    # Step 1: Create the expected sequence files in tmp_path
+    # Step 0: Create data directory in tmp_path
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(exist_ok=True)
+    
+    # Step 1: Create the expected sequence files in tmp_path/data
     # net-charge.py reads these files at module level (top-level code).
     # The B and A chains are read and combined to form the "insulin" variable.
     # We use simple test sequences here; real sequences come from split_insulin.py.
-    (tmp_path / "preproinsulin_seq_clean.txt").write_text("ATGC")
-    (tmp_path / "lsinsulin_seq_clean.txt").write_text("LS")
-    (tmp_path / "binsulin_seq_clean.txt").write_text("BCHAIN")
-    (tmp_path / "ainsulin_seq_clean.txt").write_text("ACHAIN")
-    (tmp_path / "cinsulin_seq_clean.txt").write_text("CCHAIN")
+    (tmp_path / "data" / "preproinsulin_seq_clean.txt").write_text("ATGC")
+    (tmp_path / "data" / "lsinsulin_seq_clean.txt").write_text("LS")
+    (tmp_path / "data" / "binsulin_seq_clean.txt").write_text("BCHAIN")
+    (tmp_path / "data" / "ainsulin_seq_clean.txt").write_text("ACHAIN")
+    (tmp_path / "data" / "cinsulin_seq_clean.txt").write_text("CCHAIN")
 
     # Step 2: Change the working directory to tmp_path
     # monkeypatch.chdir() temporarily changes the current working directory.
     # All relative file operations (open() calls) will use this directory.
-    # This is critical because net-charge.py calls open("binsulin_seq_clean.txt", ...)
-    # without an absolute path, so it looks in the current working directory.
+    # This is critical because net-charge.py calls open("data/binsulin_seq_clean.txt", ...)
+    # with a relative path, so it looks in the current working directory.
     monkeypatch.chdir(tmp_path)
 
     # Step 3: Load and execute net-charge.py
@@ -100,6 +104,10 @@ def test_net_charge_calculation_with_real_insulin(tmp_path, monkeypatch, capsys)
       - At high pH (14), negative charges dominate (low/negative net charge).
       - Output table is printed for all pH values 0 through 14.
     """
+    # Step 0: Create data directory in tmp_path
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(exist_ok=True)
+    
     # Step 1: Create realistic B and A chain sequences
     # These are the actual human insulin chains.
     # B-chain: 30 aa, contains charge-bearing residues (K, R, D, etc.)
@@ -110,14 +118,14 @@ def test_net_charge_calculation_with_real_insulin(tmp_path, monkeypatch, capsys)
     # Combined insulin sequence (51 aa) for charge calculation
     insulin_seq = b_seq + a_seq
     
-    # Step 2: Create the sequence files in tmp_path
-    # net-charge.py reads binsulin_seq_clean.txt and ainsulin_seq_clean.txt
+    # Step 2: Create the sequence files in tmp_path/data
+    # net-charge.py reads data/binsulin_seq_clean.txt and data/ainsulin_seq_clean.txt
     # and concatenates them (via the `insulin` variable).
-    (tmp_path / "preproinsulin_seq_clean.txt").write_text("dummy")
-    (tmp_path / "lsinsulin_seq_clean.txt").write_text("dummy")
-    (tmp_path / "binsulin_seq_clean.txt").write_text(b_seq)
-    (tmp_path / "ainsulin_seq_clean.txt").write_text(a_seq)
-    (tmp_path / "cinsulin_seq_clean.txt").write_text("dummy")
+    (tmp_path / "data" / "preproinsulin_seq_clean.txt").write_text("dummy")
+    (tmp_path / "data" / "lsinsulin_seq_clean.txt").write_text("dummy")
+    (tmp_path / "data" / "binsulin_seq_clean.txt").write_text(b_seq)
+    (tmp_path / "data" / "ainsulin_seq_clean.txt").write_text(a_seq)
+    (tmp_path / "data" / "cinsulin_seq_clean.txt").write_text("dummy")
     
     # Step 3: Change working directory to tmp_path
     monkeypatch.chdir(tmp_path)

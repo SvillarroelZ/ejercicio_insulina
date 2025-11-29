@@ -14,7 +14,7 @@ The output is written into four separate files, maintaining consistent
 file names for downstream scripts such as string-insulin.py.
 """
 
-CLEAN_FILE = "preproinsulin_seq_clean.txt"
+CLEAN_FILE = "data/preproinsulin_seq_clean.txt"
 
 
 def split_insulin(clean_file: str = CLEAN_FILE):
@@ -42,16 +42,16 @@ def split_insulin(clean_file: str = CLEAN_FILE):
     # ---------------------------------------------------------
     # Write each segment to its corresponding file
     # ---------------------------------------------------------
-    with open("lsinsulin_seq_clean.txt", "w") as f:
+    with open("data/lsinsulin_seq_clean.txt", "w") as f:
         f.write(ls_seq)
 
-    with open("binsulin_seq_clean.txt", "w") as f:
+    with open("data/binsulin_seq_clean.txt", "w") as f:
         f.write(b_seq)
 
-    with open("cinsulin_seq_clean.txt", "w") as f:
+    with open("data/cinsulin_seq_clean.txt", "w") as f:
         f.write(c_seq)
 
-    with open("ainsulin_seq_clean.txt", "w") as f:
+    with open("data/ainsulin_seq_clean.txt", "w") as f:
         f.write(a_seq)
 
     # ---------------------------------------------------------

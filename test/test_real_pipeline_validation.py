@@ -5,8 +5,8 @@ This test executes the COMPLETE pipeline using the actual repository files
 and data. Unlike isolated unit tests that use tmp_path, this test:
 
 1. Reads the real preproinsulin_seq.txt file from the repository.
-2. Executes clean_sequence() to generate preproinsulin_seq_clean.txt in the repo root.
-3. Executes split_insulin.split_insulin() to generate four segment files.
+2. Executes clean_sequence() to generate data/preproinsulin_seq_clean.txt in the data/ directory.
+3. Executes split_insulin.split_insulin() to generate four segment files in data/.
 4. Imports and executes string-insulin.py and net-charge.py with real files.
 5. Validates that all outputs match expected biological values.
 6. Cleans up all generated files after the test completes.
@@ -17,12 +17,12 @@ It detects regressions immediately if any module is modified incorrectly.
 Expected flow:
   preproinsulin_seq.txt (ORIGIN format, 110 aa)
        ↓ clean_sequence()
-  preproinsulin_seq_clean.txt (cleaned, 110 lowercase letters)
+  data/preproinsulin_seq_clean.txt (cleaned, 110 lowercase letters)
        ↓ split_insulin.split_insulin()
-  ├─ lsinsulin_seq_clean.txt (24 aa)
-  ├─ binsulin_seq_clean.txt (30 aa)
-  ├─ cinsulin_seq_clean.txt (35 aa)
-  └─ ainsulin_seq_clean.txt (21 aa)
+  ├─ data/lsinsulin_seq_clean.txt (24 aa)
+  ├─ data/binsulin_seq_clean.txt (30 aa)
+  ├─ data/cinsulin_seq_clean.txt (35 aa)
+  └─ data/ainsulin_seq_clean.txt (21 aa)
        ↓ import string-insulin.py
   molecularWeightInsulin (computed from B + A chains)
        ↓ import net-charge.py
@@ -91,13 +91,13 @@ def test_real_pipeline_end_to_end_with_actual_repo_files():
     assert "ORIGIN" in original_content, "Input file should be in NCBI ORIGIN format"
     assert "//" in original_content, "Input file should end with // marker"
 
-    # Step 2: Run clean_sequence via the wrapper to generate preproinsulin_seq_clean.txt
-    # This creates a REAL file in the repo root (will be cleaned up by conftest.py)
+    # Step 2: Run clean_sequence via the wrapper to generate data/preproinsulin_seq_clean.txt
+    # This creates a REAL file in the repo data/ directory (will be cleaned up by conftest.py)
     clean_preproinsulin()
 
     # Step 3: Verify the cleaned file was created and has correct properties
-    cleaned_file = repo_root / "preproinsulin_seq_clean.txt"
-    assert cleaned_file.exists(), "preproinsulin_seq_clean.txt should exist after cleaning"
+    cleaned_file = repo_root / "data" / "preproinsulin_seq_clean.txt"
+    assert cleaned_file.exists(), "data/preproinsulin_seq_clean.txt should exist after cleaning"
     cleaned_seq = cleaned_file.read_text().strip()
 
     # Validate cleaned sequence properties
@@ -114,16 +114,17 @@ def test_real_pipeline_end_to_end_with_actual_repo_files():
     split_insulin.split_insulin()
 
     # Step 5: Verify all four segment files were created with correct content
-    ls_file = repo_root / "lsinsulin_seq_clean.txt"
-    b_file = repo_root / "binsulin_seq_clean.txt"
-    c_file = repo_root / "cinsulin_seq_clean.txt"
-    a_file = repo_root / "ainsulin_seq_clean.txt"
+    data_dir = repo_root / "data"
+    ls_file = data_dir / "lsinsulin_seq_clean.txt"
+    b_file = data_dir / "binsulin_seq_clean.txt"
+    c_file = data_dir / "cinsulin_seq_clean.txt"
+    a_file = data_dir / "ainsulin_seq_clean.txt"
 
     # Verify files exist
-    assert ls_file.exists(), "lsinsulin_seq_clean.txt should exist after split"
-    assert b_file.exists(), "binsulin_seq_clean.txt should exist after split"
-    assert c_file.exists(), "cinsulin_seq_clean.txt should exist after split"
-    assert a_file.exists(), "ainsulin_seq_clean.txt should exist after split"
+    assert ls_file.exists(), "data/lsinsulin_seq_clean.txt should exist after split"
+    assert b_file.exists(), "data/binsulin_seq_clean.txt should exist after split"
+    assert c_file.exists(), "data/cinsulin_seq_clean.txt should exist after split"
+    assert a_file.exists(), "data/ainsulin_seq_clean.txt should exist after split"
 
     # Read segment content
     ls_seq = ls_file.read_text().strip()

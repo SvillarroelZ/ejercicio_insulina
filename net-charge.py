@@ -23,11 +23,11 @@ def read_file(path: str) -> str:
     with open(path) as f:
         return f.read().strip()
     
-preproInsulin = read_file("preproinsulin_seq_clean.txt")
-lsInsulin = read_file("lsinsulin_seq_clean.txt")
-bInsulin = read_file("binsulin_seq_clean.txt")
-aInsulin = read_file("ainsulin_seq_clean.txt")
-cInsulin = read_file("cinsulin_seq_clean.txt")
+preproInsulin = read_file("data/preproinsulin_seq_clean.txt")
+lsInsulin = read_file("data/lsinsulin_seq_clean.txt")
+bInsulin = read_file("data/binsulin_seq_clean.txt")
+aInsulin = read_file("data/ainsulin_seq_clean.txt")
+cInsulin = read_file("data/cinsulin_seq_clean.txt")
 
 insulin = bInsulin + aInsulin
 
