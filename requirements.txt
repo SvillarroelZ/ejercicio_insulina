@@ -1,0 +1,20 @@
+# =============================================================================
+# Python Dependencies for ejercicio_insulina project
+# =============================================================================
+# Install with: pip install -r requirements.txt
+#
+# Note: Source code (src/*.py) uses only Python standard library.
+# Dependencies listed here are for testing and development only.
+
+# Testing Framework
+# -----------------
+pytest>=9.0.0,<10.0.0
+pytest-cov>=6.0.0,<7.0.0
+
+# Optional Development Tools
+# --------------------------
+# Uncomment for enhanced development experience:
+# pytest-watch>=4.2.0       # Auto-run tests on file changes
+# black>=24.0.0             # Code formatter
+# mypy>=1.0.0               # Static type checker
+# ruff>=0.1.0               # Fast Python linter

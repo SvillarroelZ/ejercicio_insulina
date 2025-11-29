@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
-"""
-Reset workspace utility for insulin project.
-
-This script removes all generated files and artifacts from the workspace:
-  Generated sequence files (*_seq_clean.txt) from pipeline execution
-  Test cache directories (.pytest_cache, __pycache__)
-  Coverage reports (.coverage, htmlcov/)
-
-Use this to reset the workspace to a clean state before running the pipeline.
-
-Note: This is different from cleaner.py which cleans ORIGIN format sequences.
-      This script resets the entire workspace by removing generated artifacts.
-
-Usage:
-    python reset_workspace.py           # Interactive: shows files and asks confirmation
-    python reset_workspace.py --force   # Non-interactive: deletes without asking
-    python reset_workspace.py --list    # Just list files without deleting
-"""
+# Reset workspace utility for insulin project.
+#
+# This script removes all generated files and artifacts from the workspace:
+#   Generated sequence files (*_seq_clean.txt) from pipeline execution
+#   Test cache directories (.pytest_cache, __pycache__)
+#
+# Use this to reset the workspace to a clean state before running the pipeline.
+#
+# Note: This is different from cleaner.py which cleans ORIGIN format sequences.
+#       This script resets the entire workspace by removing generated artifacts.
+#
+# Usage:
+#     python reset_workspace.py           # Interactive: shows files and asks confirmation
+#     python reset_workspace.py --force   # Non-interactive: deletes without asking
+#     python reset_workspace.py --list    # Just list files without deleting
 
 import sys
 from pathlib import Path
@@ -24,11 +21,12 @@ import shutil
 
 
 def find_generated_files(project_root):
-    """Find all generated files that should be cleaned."""
+    # Find all generated files that should be cleaned.
     files_to_clean = []
     
-    # 1. Generated sequence files in project root (*_seq_clean.txt)
-    sequence_files = list(project_root.glob("*_seq_clean.txt"))
+    # 1. Generated sequence files in data/ directory (*_seq_clean.txt)
+    data_dir = project_root / "data"
+    sequence_files = list(data_dir.glob("*_seq_clean.txt")) if data_dir.exists() else []
     files_to_clean.extend(sequence_files)
     
     # 2. Test cache directories
@@ -36,12 +34,12 @@ def find_generated_files(project_root):
         project_root / ".pytest_cache",
         project_root / "__pycache__",
         project_root / "test" / "__pycache__",
+        project_root / "src" / "__pycache__",
     ]
     
     # 3. Coverage files
     coverage_files = [
         project_root / ".coverage",
-        project_root / "htmlcov",
     ]
     
     return {
@@ -52,7 +50,7 @@ def find_generated_files(project_root):
 
 
 def display_files(files_dict):
-    """Display all files that will be cleaned."""
+    # Display all files that will be cleaned.
     total = 0
     
     if files_dict['sequence_files']:
@@ -79,7 +77,7 @@ def display_files(files_dict):
 
 
 def clean_files(files_dict):
-    """Delete all files and directories."""
+    # Delete all files and directories.
     deleted = 0
     errors = []
     
@@ -114,7 +112,7 @@ def clean_files(files_dict):
 
 
 def main():
-    """Main reset workspace function."""
+    # Main reset workspace function.
     import argparse
     
     parser = argparse.ArgumentParser(

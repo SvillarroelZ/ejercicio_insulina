@@ -1,26 +1,4 @@
-"""
-Unit tests for the cleaner module.
-
-This module tests the clean_sequence() function and the clean_preproinsulin() wrapper.
-The tests validate:
-  1. Normal behavior with NCBI ORIGIN-format input.
-  2. Input without ORIGIN/end markers but with noise (digits, punctuation).
-  3. Error handling when input file does not exist.
-  4. The wrapper function that uses module-level constants.
-  5. Real-world case: cleaning the actual 110 amino acid preproinsulin sequence.
-  6. Edge cases: empty files, files with only non-letter characters.
-
-All tests use tmp_path (pytest fixture) to ensure files are created only
-inside a temporary directory and are cleaned up automatically after the test.
-No files are left in the repository root.
-
-Key pytest fixtures used:
-  - tmp_path: Provides an isolated temporary directory per test. Pytest
-    automatically deletes it after the test completes. Use it like a
-    regular pathlib.Path object.
-  - monkeypatch: Allows temporary modification of module attributes (like
-    constants). After the test, attributes are restored to original values.
-"""
+# Tests for cleaner: validate clean_sequence() and clean_preproinsulin() behavior.
 
 import re
 from pathlib import Path
@@ -31,28 +9,12 @@ from cleaner import clean_sequence, clean_preproinsulin as cleaner_main
 
 
 def _expected_clean(text: str) -> str:
-	r"""
-	Helper function to compute the expected cleaned sequence.
-	
-	This mimics exactly what clean_sequence() does:
-	  1. Remove the string "ORIGIN" and "//" (NCBI format markers).
-	  2. Remove all digits and whitespace (regex: [0-9\s]).
-	  3. Keep only letters (A-Z, a-z) and convert to lowercase.
-	
-	This helper ensures our assertions match the actual function behavior.
-	If clean_sequence() changes its logic, we update this helper and all
-	tests automatically use the new expected behavior.
-	
-	Args:
-	    text: Raw input text that may contain ORIGIN markers, numbers, spaces, etc.
-	
-	Returns:
-	    Cleaned string containing only lowercase letters.
-	
-	Example:
-	    >>> _expected_clean("ORIGIN\n1 atg 2 cta\n//")
-	    'atgcta'
-	"""
+	# Helper function to compute the expected cleaned sequence.
+	# This mimics exactly what clean_sequence() does: 1. Remove the string "ORIGIN" and "//" (NCBI format markers). 2. Remove all digits and whitespace (regex: [0-9\s]). 3. Keep only letters (A-Z, a-z) and convert to lowercase.
+	# This helper ensures our assertions match the actual function behavior. If clean_sequence() changes its logic, we update this helper and all tests automatically use the new expected behavior.
+	# Args: text: Raw input text that may contain ORIGIN markers, numbers, spaces, etc.
+	# Returns: Cleaned string containing only lowercase letters.
+	# Example: _expected_clean("ORIGIN\n1 atg 2 cta\n//") -> 'atgcta'
 	# Step 1: Remove ORIGIN and end markers (// is the NCBI end-of-sequence marker)
 	# str.replace() returns a new string with all occurrences of the substring replaced.
 	# We chain two replace() calls: first remove "ORIGIN", then remove "//".
@@ -71,22 +33,13 @@ def _expected_clean(text: str) -> str:
 	return re.sub(r"[^a-zA-Z]", "", data).lower()
 
 
+import pytest
+
 def test_clean_sequence_nominal_origin_format(tmp_path):
-	"""
-	Test case: Normal workflow with a file in NCBI ORIGIN format.
-	
-	This is the typical use case: a raw sequence from NCBI that includes
-	the ORIGIN header, position numbers, whitespace and the // end marker.
-	
-	The tmp_path fixture creates an isolated temporary directory for this test.
-	All files created inside tmp_path are automatically deleted by pytest after
-	the test completes, ensuring no side effects in the repository.
-	
-	Expected behavior:
-	  - The function should read the file, clean it, and write the result.
-	  - Return value should be the cleaned sequence (lowercase letters only).
-	  - Output file should exist and contain the exact cleaned sequence.
-	"""
+	# Test case: Normal workflow with a file in NCBI ORIGIN format.
+	# This is the typical use case: a raw sequence from NCBI that includes the ORIGIN header, position numbers, whitespace and the // end marker.
+	# The tmp_path fixture creates an isolated temporary directory for this test. All files created inside tmp_path are automatically deleted by pytest after the test completes, ensuring no side effects in the repository.
+	# Expected behavior: The function should read the file, clean it, and write the result. Return value should be the cleaned sequence (lowercase letters only). Output file should exist and contain the exact cleaned sequence.
 	# Step 1: Create input text in NCBI ORIGIN format
 	# Real ORIGIN files have a header "ORIGIN", position numbers (1, 61, ...) and grouped sequences
 	content = """ORIGIN
@@ -135,18 +88,9 @@ def test_clean_sequence_nominal_origin_format(tmp_path):
 
 
 def test_clean_sequence_no_origin_labels(tmp_path):
-	"""
-	Test case: Input without ORIGIN markers but with noise (numbers, symbols).
-	
-	This tests the cleaner's robustness to input that doesn't follow the
-	exact NCBI format but still contains unwanted characters (punctuation,
-	digits, mixed case, etc.).
-	
-	Expected behavior:
-	  - The function should silently handle the missing markers (no error).
-	  - All non-letter characters should be removed.
-	  - Output should be clean lowercase letters.
-	"""
+	# Test case: Input without ORIGIN markers but with noise (numbers, symbols).
+	# This tests the cleaner's robustness to input that doesn't follow the exact NCBI format but still contains unwanted characters (punctuation, digits, mixed case, etc.).
+	# Expected behavior: The function should silently handle the missing markers (no error). All non-letter characters should be removed. Output should be clean lowercase letters.
 	# Step 1: Create input with no ORIGIN/end markers but lots of noise
 	# This simulates a user providing a messy sequence file.
 	content = "abc123 xy!z-.,_ 987"
@@ -178,17 +122,9 @@ def test_clean_sequence_no_origin_labels(tmp_path):
 
 
 def test_clean_sequence_file_not_found_raises():
-	"""
-	Test case: Error handling when input file does not exist.
-	
-	Expected behavior:
-	  - The function should raise FileNotFoundError.
-	  - This verifies the function properly propagates OS errors
-	    (it does not catch and suppress the exception).
-	  
-	We use pytest.raises() to verify an exception is raised.
-	If the code does NOT raise the expected exception, the test fails.
-	"""
+	# Test case: Error handling when input file does not exist.
+	# Expected behavior: The function should raise FileNotFoundError. This verifies the function properly propagates OS errors (it does not catch and suppress the exception).
+	# We use pytest.raises() to verify an exception is raised. If the code does NOT raise the expected exception, the test fails.
 	# Step 1: Use pytest.raises() context manager to expect an exception
 	# Syntax: with pytest.raises(ExceptionType): <code that should raise>
 	# If the code raises the specified exception, the test passes.
@@ -201,31 +137,12 @@ def test_clean_sequence_file_not_found_raises():
 
 
 def test_clean_preproinsulin_uses_constants_and_writes(tmp_path, monkeypatch):
-	"""
-	Test case: The wrapper function clean_preproinsulin() uses module constants.
-	
-	The cleaner module defines two module-level constants:
-	  - INPUT_FILE = "preproinsulin_seq.txt"
-	  - OUTPUT_FILE = "preproinsulin_seq_clean.txt"
-	
-	The wrapper clean_preproinsulin() calls clean_sequence(INPUT_FILE, OUTPUT_FILE).
-	For testing, we don't want to use the actual files. Instead, we use
-	monkeypatch (a pytest fixture) to temporarily replace the constants.
-	
-	monkeypatch.setattr(target, name, value):
-	  - target: string like "module.CONSTANT_NAME"
-	  - name: not needed when using string form (it's implicit in target)
-	  - value: the replacement value
-	
-	After the test, monkeypatch automatically restores the original values.
-	This is cleaner and safer than modifying the module directly.
-	
-	Expected behavior:
-	  - The wrapper should read from INPUT_FILE and write to OUTPUT_FILE.
-	  - When we monkeypatch these constants, the wrapper uses our temp files.
-	  - After the test, the constants are restored to their original values.
-	  - No files are left in the repo root.
-	"""
+	# Test case: The wrapper function clean_preproinsulin() uses module constants.
+	# The cleaner module defines two module-level constants: INPUT_FILE = "preproinsulin_seq.txt" and OUTPUT_FILE = "preproinsulin_seq_clean.txt".
+	# The wrapper clean_preproinsulin() calls clean_sequence(INPUT_FILE, OUTPUT_FILE). For testing, we don't want to use the actual files. Instead, we use monkeypatch (a pytest fixture) to temporarily replace the constants.
+	# monkeypatch.setattr(target, name, value): target: string like "module.CONSTANT_NAME", name: not needed when using string form (it's implicit in target), value: the replacement value.
+	# After the test, monkeypatch automatically restores the original values. This is cleaner and safer than modifying the module directly.
+	# Expected behavior: The wrapper should read from INPUT_FILE and write to OUTPUT_FILE. When we monkeypatch these constants, the wrapper uses our temp files. After the test, the constants are restored to their original values. No files are left in the repo root.
 	# Step 1: Create temp file paths for input and output
 	# These will temporarily replace the module's INPUT_FILE and OUTPUT_FILE.
 	# We create them in tmp_path so they're automatically cleaned up.
@@ -262,26 +179,10 @@ def test_clean_preproinsulin_uses_constants_and_writes(tmp_path, monkeypatch):
 
 
 def test_clean_sequence_with_real_preproinsulin_data(tmp_path):
-	"""
-	Real-world test case: Clean the actual human preproinsulin sequence.
-	
-	This test uses a realistic 110 amino acid preproinsulin sequence
-	(human insulin protein) in a format similar to what you would download
-	from a biological database (like NCBI). This validates that the cleaner
-	correctly handles real, biologically relevant data.
-	
-	The preproinsulin is a precursor to insulin. After processing, it yields:
-	  - LS (leader sequence, 24 aa)
-	  - B-chain (30 aa)
-	  - C-peptide (35 aa)
-	  - A-chain (21 aa)
-	
-	Expected behavior:
-	  - Input is 110 aa with ORIGIN markers, position numbers, and grouped layout.
-	  - After cleaning, result should be exactly 110 lowercase letters.
-	  - The sequence should match the known human preproinsulin.
-	  - This output is critical downstream: split_insulin.py expects exactly 110 aa.
-	"""
+	# Real-world test case: Clean the actual human preproinsulin sequence.
+	# This test uses a realistic 110 amino acid preproinsulin sequence (human insulin protein) in a format similar to what you would download from a biological database (like NCBI).
+	# This validates that the cleaner correctly handles real, biologically relevant data. The preproinsulin is a precursor to insulin. After processing, it yields: LS (leader sequence, 24 aa), B-chain (30 aa), C-peptide (35 aa), A-chain (21 aa).
+	# Expected behavior: Input is 110 aa with ORIGIN markers, position numbers, and grouped layout. After cleaning, result should be exactly 110 lowercase letters. The sequence should match the known human preproinsulin. This output is critical downstream: split_insulin.py expects exactly 110 aa.
 	# Step 1: Real human preproinsulin sequence (110 amino acids)
 	# This is the actual sequence from standard biological databases.
 	# Format: single-letter amino acid codes (m=methionine, a=alanine, etc.)
@@ -327,17 +228,9 @@ def test_clean_sequence_with_real_preproinsulin_data(tmp_path):
 
 
 def test_clean_sequence_empty_file(tmp_path):
-	"""
-	Edge case test: Empty or whitespace-only input file.
-	
-	Validates robustness: the cleaner should handle edge cases gracefully
-	without crashes or unexpected behavior.
-	
-	Expected behavior:
-	  - An empty file should result in an empty cleaned sequence.
-	  - No errors should be raised.
-	  - The output file should exist but be empty.
-	"""
+	# Edge case test: Empty or whitespace-only input file.
+	# Validates robustness: the cleaner should handle edge cases gracefully without crashes or unexpected behavior.
+	# Expected behavior: An empty file should result in an empty cleaned sequence. No errors should be raised. The output file should exist but be empty.
 	# Step 1: Create an empty file
 	inp = tmp_path / "empty.txt"
 	out = tmp_path / "empty_clean.txt"
@@ -356,17 +249,9 @@ def test_clean_sequence_empty_file(tmp_path):
 
 
 def test_clean_sequence_only_numbers_and_symbols(tmp_path):
-	"""
-	Edge case test: Input containing only numbers and symbols (no letters).
-	
-	Validates robustness: what happens when the input has no valid characters?
-	
-	Expected behavior:
-	  - All characters should be removed during cleaning.
-	  - Result should be an empty string.
-	  - No error should be raised.
-	  - The output file should exist but be empty.
-	"""
+	# Edge case test: Input containing only numbers and symbols (no letters).
+	# Validates robustness: what happens when the input has no valid characters?
+	# Expected behavior: All characters should be removed during cleaning. Result should be an empty string. No error should be raised. The output file should exist but be empty.
 	# Step 1: Create input with no letters, only noise
 	content = "123 456 !@# $%^ &*( )"
 	inp = tmp_path / "no_letters.txt"
@@ -401,3 +286,83 @@ def test_clean_sequence_expected_length_warning(tmp_path, capsys):
     # Step 4: Verify that the WARNING message was printed
     captured = capsys.readouterr()
     assert "WARNING: expected 10" in captured.out
+
+def test_clean_sequence_expected_length_ok(tmp_path, capsys):
+    # Create input with length 6 after cleaning
+    input_content = "ORIGIN\n1 abcdef\n//\n"
+    input_file = tmp_path / "preproinsulin_seq.txt"
+    output_file = tmp_path / "preproinsulin_seq_clean.txt"
+    input_file.write_text(input_content)
+
+    # Call with expected_length equal to cleaned length
+    result = clean_sequence(str(input_file), str(output_file), expected_length=6)
+    captured = capsys.readouterr()
+    output = captured.out
+
+    assert result == "abcdef"
+    assert "Length OK" in output
+
+def test_cleaner_main_block_core(tmp_path, monkeypatch):
+	# Execute cleaner.py via __main__ to cover CLI entry path in src.
+	# Uses real data file and writes output to data/ directory.
+	# Output file will be cleaned by conftest.py after tests.
+	repo_root = Path(__file__).resolve().parents[1]
+	data_dir = repo_root / "data"
+	output_file = data_dir / "preproinsulin_seq_clean.txt"
+	
+	# Remove output file if it exists from previous run
+	if output_file.exists():
+		output_file.unlink()
+	
+	import runpy
+	runpy.run_path(str(repo_root / "src" / "cleaner.py"), run_name="__main__")
+	
+	# Verify output was created in data/ directory
+	assert output_file.exists(), "Output should be created in data/"
+	cleaned = output_file.read_text().strip()
+	assert len(cleaned) == 110, f"Expected 110 aa, got {len(cleaned)}"
+	assert cleaned.islower(), "Sequence should be lowercase"
+	assert cleaned.isalpha(), "Sequence should contain only letters"
+
+
+def test_cleaner_handles_mixed_case_input(tmp_path):
+	# Verify cleaner converts mixed case sequences to lowercase.
+	input_content = "ORIGIN\n1 ATGcta GGT\n//\n"
+	inp = tmp_path / "input.txt"
+	out = tmp_path / "output.txt"
+	inp.write_text(input_content)
+	
+	result = clean_sequence(str(inp), str(out))
+	
+	assert result == "atgctaggt", "Should convert all letters to lowercase"
+	assert result.islower(), "Result should be entirely lowercase"
+
+
+def test_cleaner_preserves_sequence_integrity(tmp_path):
+	# Verify cleaner doesn't introduce or lose amino acids.
+	# Known sequence with all 20 standard amino acids
+	aa_sequence = "ACDEFGHIKLMNPQRSTVWY"
+	input_content = f"ORIGIN\n1 {aa_sequence}\n//\n"
+	inp = tmp_path / "input.txt"
+	out = tmp_path / "output.txt"
+	inp.write_text(input_content)
+	
+	result = clean_sequence(str(inp), str(out))
+	
+	assert len(result) == len(aa_sequence), "Should preserve all amino acids"
+	assert set(result) == set(aa_sequence.lower()), "Should preserve amino acid composition"
+
+
+def test_cleaner_output_file_created_in_correct_location(tmp_path):
+	# Verify output file is created in the specified location.
+	input_content = "ORIGIN\n1 atgc\n//\n"
+	inp = tmp_path / "input.txt"
+	out = tmp_path / "subdir" / "output.txt"
+	out.parent.mkdir(parents=True, exist_ok=True)
+	inp.write_text(input_content)
+	
+	result = clean_sequence(str(inp), str(out))
+	
+	assert out.exists(), "Output file should be created at specified path"
+	assert out.read_text() == result, "File content should match return value"
+	assert not (tmp_path / "output.txt").exists(), "Should not create file in wrong location"
